@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pokedex</title>
+    <link rel="icon" type="image/x-icon" href="./assets/icons/favicon.png">
+    <link rel="stylesheet" href="./styles/standard.css">
+    <link rel="stylesheet" href="./styles/font-face.css"> 
+    <link href="https://unpkg.com/nes.css/css/nes-core.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="./style.css">
+    <script src="./scripts/template.js"></script>
+</head>
+<body onload="init()">
+    <header id="top">
+        <div class="container">
+            <h1>Pokedex</h1>
+        </div>
+    </header>
+    <main>
+
+        <div class="container">
+            <section id="searchArea">
+                <input type="text" id="search-input" placeholder="search for pokemon" class="nes-input">
+                <button type="button" class="nes-btn is-primary" onclick="searchPokemon()">Search</button>
+            </section>
+
+            <section id="resultArea"></section>
+
+            <section id="interactionArea">
+                <button type="button" id="load-more" class="nes-btn is-primary" onclick="loadMore()">load more!</button>
+            </section>
+        </div>
+
+    </main>
+    <footer>
+        <div class="container">
+
+        </div>
+    </footer>
+    <dialog class="nes-dialog is-dark is-rounded" id="dialog-pokemon">
+    </dialog>
+    <button type="button" class="nes-btn is-error scroll-btn active" href="#top"><span>&lt;</span></button>
+</body>
+<script src="./script.js"></script>
+</html>

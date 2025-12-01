@@ -1,0 +1,6 @@
+@font-face {
+    font-family: 'Kongtext';
+    font-style: normal;
+    font-weight: 400;
+    src: local('Kongtext'), url('../assets/fonts/kongtext.woff2') format('woff');
+}
