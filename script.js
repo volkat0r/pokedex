@@ -11,6 +11,9 @@ function init(){
 
 // #region - Global Variables
 let pokemonCollection = [];
+let pokemonResultCollection = []; // empty array after searching
+let currentDialogIndex = 1;
+const pokemonDialog = document.getElementById("dialog-pokemon");
 let url = `https://pokeapi.co/api/v2/pokemon?limit=30&offset=0`;
 // #endregion
 
@@ -19,7 +22,6 @@ async function fetchPokemons(){
     try {
         const response = await fetch(url);
         const PokeData = await response.json();
-
         url = PokeData.next;
         pokemonCollection = pokemonCollection.concat(PokeData.results);
         renderPokemon();
@@ -33,58 +35,92 @@ async function renderPokemon(){
     resultRef.innerHTML = "";
 
     for(pokeIndex = 0; pokeIndex < pokemonCollection.length; pokeIndex++){
-        const details = await pokemonData(pokeIndex);
+        const details = await pokemonDataIndex(pokeIndex);
         resultRef.innerHTML += pokemonTemplate(pokeIndex, details);
     }
 }
 
-async function pokemonData(pokeIndex){
-    let pokeURL = `https://pokeapi.co/api/v2/pokemon/${pokeIndex + 1}`;
-    const responseSingle = await fetch(pokeURL);
+function renderDetailsPokemon(details){
+    pokemonDialog.innerHTML = pokemonDetailsTemplate(details);
+    pokemonDialog.showModal();
+}
+
+async function pokemonDataIndex(pokeIndex){
+    pokeIndex = pokeIndex + 1;
+    let pokeIndexUrl = `https://pokeapi.co/api/v2/pokemon/${pokeIndex}`;
+    const responseSingle = await fetch(pokeIndexUrl);
     return await responseSingle.json();
+}
+
+async function pokemonDataById(id){
+    const pokeSingleUrl = `https://pokeapi.co/api/v2/pokemon/${id}`;
+    const response = await fetch(pokeSingleUrl);
+    return await response.json();
 }
 // #endregion
 
 // #region Dialog
-async function renderDetailsPokemon(){
-    const dialogRef = document.getElementById("dialog-pokemon");
-    dialogRef.innerHTML = "";
-
-    for(pokeIndex = 0; pokeIndex < pokemonCollection.length; pokeIndex++){
-        const details = await pokemonData(pokeIndex);
-        dialogRef.innerHTML += pokemonDetailsTemplate(pokeIndex, details);
+function openTab(event, activeTab){
+    const tabPane = document.getElementsByClassName("tab-pane");
+    const tabBtn = document.getElementsByClassName("tab-btn");
+    for (let i = 0; i < tabPane.length; i++) {
+        tabPane[i].style.display = "none";
     }
+    for (let i = 0; i < tabBtn.length; i++) {
+        tabBtn[i].classList.remove("is-primary");
+    }
+    document.getElementById(activeTab).style.display = "flex";
+    event.currentTarget.classList.add("is-primary");
 }
 
-function openCheckDetails(){
-    const dialog = document.getElementById("dialog-pokemon");
-    if (dialog) {
-        console.log("Dialog open");
-    } else {
-        console.log("Dialog closed");
-    }
-}
-
-function renderDetailsPokemon(details){
-    console.log("renderDetailsPokemon");
-    const pokemonDetails = document.getElementById("test-dialog");
-    pokemonDetails += pokemonDetailsTemplate();
-
-    pokeDetails.showModal();
-    openCheckDetails(dialog);
+async function openDetails(dialogIndex){
+    currentDialogIndex = dialogIndex;
+    const body = document.querySelector("body");
+    body.classList.add("overflow-hidden");
+    const details = await pokemonDataById(dialogIndex);
+    renderDetailsPokemon(details);
 }
 
 function closePokemonDetails(){
-    console.log("closeDialog");    
+    const body = document.querySelector("body");
+    body.classList.remove("overflow-hidden");
+    pokemonDialog.close();
 }
 
-function prevPokemon(){
-    console.log("previous Pokemon");    
+pokemonDialog.addEventListener('click', (outsideClick) => {
+    const dialogInner = document.getElementById("inner-dialog");
+    if(!dialogInner.contains(outsideClick.target)){
+        closePokemonDetails();
+    }
+});
+
+async function refreshDialog(dialogIndex){
+    const details = await pokemonDataIndex(dialogIndex);
+    renderDetailsPokemon(details);
 }
 
+// next Button in Dialog
 function nextPokemon(){
-    console.log("next Pokemon");    
+    let collectionTotal = pokemonCollection.length;
+    if(currentDialogIndex < collectionTotal -1){
+        currentDialogIndex++;
+    } else{
+        currentDialogIndex = 0;
+    }
+    refreshDialog(currentDialogIndex);
 }
+
+// previous Button in Dialog
+function prevPokemon(){ 
+    let collectionTotal = pokemonCollection.length;
+    if(currentDialogIndex > 0){
+        currentDialogIndex--;
+    } else {
+        currentDialogIndex = collectionTotal -1;
+    }
+    refreshDialog(currentDialogIndex);
+}
+
 // #endregion
 
 // #region Loading Functions
@@ -100,12 +136,13 @@ function loadMore(){
 
 
 
-// #region Functions to get informations
+// #region - Pokemon Information/Stats Functions
 function pokemonImage(pokeData){
-    return pokeData.sprites.other["official-artwork"].front_default;
+    return pokeData.sprites.versions["generation-i"]["red-blue"].front_transparent;
 }
 
 function pokemonTypes(pokeData){
+    console.log(pokeData);
     return pokeData.types
         .map(t => typeTemplate(t.type.name))
         .join("");

@@ -99,6 +99,14 @@ a{
     color: var(--black);
 }
 
+.d-none{
+    display: none;
+}
+
+.overflow-hidden{
+    overflow:hidden;
+}
+
 header,
 section,
 footer {
