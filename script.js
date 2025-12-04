@@ -1,5 +1,5 @@
 function init(){
-    fetchPokemons();
+    fetchEmAll();
 }
 
 /**
@@ -11,37 +11,59 @@ function init(){
 
 // #region - Global Variables
 let pokemonCollection = [];
-let pokemonResultCollection = []; // empty array after searching
-let currentDialogIndex = 1;
+let currentDialogIndex = 0;
+let url = `https://pokeapi.co/api/v2/pokemon`;
 const pokemonDialog = document.getElementById("dialog-pokemon");
-let url = `https://pokeapi.co/api/v2/pokemon?limit=30&offset=0`;
+const body = document.querySelector("body");
+const loadingSpinnerRef = document.querySelector("div.loader");
 // #endregion
 
 // #region - Promise Functions
-async function fetchPokemons(){
-    try {
+
+// fetch url, overwrite url with the next-url
+async function fetchEmAll(){
+    showLoadingSpinner();
+    try {    
         const response = await fetch(url);
-        const PokeData = await response.json();
-        url = PokeData.next;
-        pokemonCollection = pokemonCollection.concat(PokeData.results);
-        renderPokemon();
+        const pokeData = await response.json();
+        url = pokeData.next; // get "next" (next pack of pokemons) which is an object of the json 
+        const pokemonDataResults = pokemonCollection.concat(pokeData.results);
+        await fetchDetails(pokemonDataResults);
     } catch (error) {
         console.error(error.message);
     }
 }
 
-async function renderPokemon(){
-    const resultRef = document.getElementById("resultArea");
-    resultRef.innerHTML = "";
+async function fetchDetails(collection){
+    collection.forEach(async(pokemon, index) => {
+        const response = await fetch(pokemon.url);
+        const details = await response.json();
+        pokemonCollection.push(details);
 
-    for(pokeIndex = 0; pokeIndex < pokemonCollection.length; pokeIndex++){
-        const details = await pokemonDataIndex(pokeIndex);
-        resultRef.innerHTML += pokemonTemplate(pokeIndex, details);
-    }
+        if(index >= 19){
+            renderPokemon(pokemonCollection);
+        }
+    })
 }
 
-function renderDetailsPokemon(details){
-    pokemonDialog.innerHTML = pokemonDetailsTemplate(details);
+function renderPokemon(collection){
+    const resultRef = document.getElementById("resultArea");
+    resultRef.innerHTML = "";
+    showLoadingSpinner();
+    for(pokeIndex = 0; pokeIndex < collection.length; pokeIndex++){
+        resultRef.innerHTML += pokemonTemplate(pokeIndex);
+    }
+    // pokeData.abilities.forEach(function(absObj) {
+    // forEach(collection )
+    // collection.forEach(function(pokemon, index){
+    //     resultRef.innerHTML += pokemonTemplate(pokeIndex, details);
+    // });
+
+    hideLoadingSpinner();
+}
+
+function renderDetailsPokemon(collection, pokeIndex){
+    pokemonDialog.innerHTML = pokemonDetailsTemplate(collection, pokeIndex);
     pokemonDialog.showModal();
 }
 
@@ -52,11 +74,12 @@ async function pokemonDataIndex(pokeIndex){
     return await responseSingle.json();
 }
 
-async function pokemonDataById(id){
-    const pokeSingleUrl = `https://pokeapi.co/api/v2/pokemon/${id}`;
-    const response = await fetch(pokeSingleUrl);
-    return await response.json();
-}
+// async function pokemonDataById(id){ // was du da gemacht hast
+//     const pokeSingleUrl = `https://pokeapi.co/api/v2/pokemon/${id}`;
+//     const response = await fetch(pokeSingleUrl);
+//     return await response.json();
+// }
+
 // #endregion
 
 // #region Dialog
@@ -73,16 +96,13 @@ function openTab(event, activeTab){
     event.currentTarget.classList.add("is-primary");
 }
 
-async function openDetails(dialogIndex){
+function openDetails(dialogIndex){
     currentDialogIndex = dialogIndex;
-    const body = document.querySelector("body");
     body.classList.add("overflow-hidden");
-    const details = await pokemonDataById(dialogIndex);
-    renderDetailsPokemon(details);
+    renderDetailsPokemon(dialogIndex);
 }
 
 function closePokemonDetails(){
-    const body = document.querySelector("body");
     body.classList.remove("overflow-hidden");
     pokemonDialog.close();
 }
@@ -94,15 +114,19 @@ pokemonDialog.addEventListener('click', (outsideClick) => {
     }
 });
 
-async function refreshDialog(dialogIndex){
-    const details = await pokemonDataIndex(dialogIndex);
-    renderDetailsPokemon(details);
+function refreshDialog(dialogIndex){
+    console.log(pokemonCollection[dialogIndex])
+    renderDetailsPokemon(dialogIndex);
 }
 
+// #region Event-Functions
+
 // next Button in Dialog
+// should 
 function nextPokemon(){
     let collectionTotal = pokemonCollection.length;
-    if(currentDialogIndex < collectionTotal -1){
+    event.stopPropagation();
+    if(currentDialogIndex < collectionTotal){
         currentDialogIndex++;
     } else{
         currentDialogIndex = 0;
@@ -111,8 +135,9 @@ function nextPokemon(){
 }
 
 // previous Button in Dialog
-function prevPokemon(){ 
+function prevPokemon(){
     let collectionTotal = pokemonCollection.length;
+    event.stopPropagation();
     if(currentDialogIndex > 0){
         currentDialogIndex--;
     } else {
@@ -123,29 +148,48 @@ function prevPokemon(){
 
 // #endregion
 
+
 // #region Loading Functions
+
 function loadMore(){
     if (!url) return;
-    fetchPokemons();
-}
+    fetchEmAll();
 
-// lazyloading
-// Zwischenspeicher
+    setTimeout(hideLoadingSpinner, 1000);
+}
 
 // #endregion
 
 
-
 // #region - Pokemon Information/Stats Functions
-function pokemonImage(pokeData){
-    return pokeData.sprites.versions["generation-i"]["red-blue"].front_transparent;
-}
 
 function pokemonTypes(pokeData){
-    console.log(pokeData);
-    return pokeData.types
-        .map(t => typeTemplate(t.type.name))
-        .join("");
+    let types = "";
+    pokeData.types.forEach(function(typeObj) {
+        const typeName = typeObj.type.name;
+        types += typeTemplate(typeName)
+    });
+    return types;
+}
+
+function pokemonStats(pokeData) {
+    let stats = "";
+    pokeData.stats.forEach(function(statObj) {
+        const statName = statObj.stat.name;
+        const statBase = statObj.base_stat;
+        stats += statsTemplate(statName, statBase)
+    });
+    return stats;
+}
+
+function pokemonAbs(pokeData) {
+    let abs = "";
+    pokeData.abilities.forEach(function(absObj) {
+        const absName = absObj.ability.name;
+        const absSlot = absObj.slot;
+        abs += abilitiesTemplate(absName, absSlot);
+    });
+    return abs;
 }
 
 function pokemonHeight(pokeData){
@@ -155,18 +199,55 @@ function pokemonHeight(pokeData){
 function pokemonWeight(pokeData){
     return pokeData.weight;
 }
+// #endregion
 
-function searchPokemon(){
+// #region - Search Pokemon
+function initSearch(){
     const searchInput = document.getElementById("search-input").value;
-    fetchDataJson(searchInput);
+    if (searchInput.length >= 3){
+        searchPokemon(searchInput);
+        renderPokemon(pokemonCollection);
+    } else if (searchInput.length < 3){
+        console.log("du brauchst mindestens 3 Buchstaben");
+    } else {
+        console.log("nix gefunden! vllt. funny Image reinladen (sad pikachu)!");
+    }
+}
+
+function searchPokemon(searchInput){
+    let actualPokemon = pokemonCollection;
+    pokemonCollection = [];
+    actualPokemon.forEach(
+        function (p) {
+            if (checkPokemonName(p.name, searchInput)){
+                pokemonCollection.push(p);
+            }
+        }
+    )
+}
+
+function checkPokemonName(pokeName, pokeSearch){
+    if(pokeName.toLowerCase().includes(pokeSearch.toLowerCase())){
+        return true;
+    }
 }
 // #endregion
 
+function scrollToTop(){
+    console.log("scroll to Top! muss ich noch feddich machen.")
+}
 
-// API
-// 1. fetch url
-// 2. build for-loop to get all data (120pokemons)
+// #region - Loading Spinner
+function showLoadingSpinner(){
+    body.classList.add("overflow-hidden");
+    loadingSpinnerRef.classList.remove("d-none");
+}
 
+function hideLoadingSpinner(){
+    body.classList.remove("overflow-hidden");
+    loadingSpinnerRef.classList.add("d-none");
+}
+// #endregion
 
 // CODE:
 // Aussagekräftige Namen für Funktionen und Variablen
@@ -206,3 +287,6 @@ function searchPokemon(){
 // Der Hintergrund ist nicht scrollbar in der großen Ansicht.
 // Wie du diese gestaltest und welche du hier alle anzeigen lässt, ist dir überlassen, jedoch sollten hier mindestens gewisse Werte wie z.B. hp/ attack/ defense etc. des Pokemon angezeigt werden, weiteres ist optional.
 // Es gibt Pfeile oder ähnliches, um zwischen den Karten in der großen Ansicht zu wechseln (wie bei der Fotogalerie).
+
+
+

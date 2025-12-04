@@ -12,9 +12,10 @@
     <script src="./scripts/template.js"></script>
 </head>
 <body onload="init()">
+    <div class="loader d-none"><span class="animation"></span></div>
     <header id="top">
         <div class="container">
-            <h1>Pokedex</h1>
+            <a href="#"><h1>Pokedex</h1></a>
         </div>
     </header>
     <main>
@@ -22,7 +23,7 @@
         <div class="container">
             <section id="searchArea">
                 <input type="text" id="search-input" placeholder="search for pokemon" class="nes-input">
-                <button type="button" class="nes-btn is-primary" onclick="searchPokemon()">Search</button>
+                <button type="button" class="nes-btn is-primary" onclick="initSearch()">Search</button>
             </section>
 
             <section id="resultArea"></section>
@@ -39,7 +40,7 @@
         </div>
     </footer>
     <dialog class="nes-dialog" id="dialog-pokemon"></dialog>
-    <button type="button" class="nes-btn is-error scroll-btn active" href="#top"><span>&lt;</span></button>
+    <button type="button" class="nes-btn is-error scroll-btn active" href="#top" onclick="scrollToTop()" id="scroll-btn"><span>&lt;</span></button>
 </body>
 <script src="./script.js"></script>
 </html>
