@@ -27,23 +27,20 @@ async function fetchEmAll(){
         const response = await fetch(url);
         const pokeData = await response.json();
         url = pokeData.next; // get "next" (next pack of pokemons) which is an object of the json 
-        const pokemonDataResults = pokemonCollection.concat(pokeData.results);
-        await fetchDetails(pokemonDataResults);
+        await fetchDetails(pokeData.results);
     } catch (error) {
         console.error(error.message);
     }
 }
 
 async function fetchDetails(collection){
-    collection.forEach(async(pokemon, index) => {
+    for(index = 0; index < collection.length; index++){
+        const pokemon = collection[index];
         const response = await fetch(pokemon.url);
         const details = await response.json();
         pokemonCollection.push(details);
-
-        if(index >= 19){
-            renderPokemon(pokemonCollection);
-        }
-    })
+    }
+    renderPokemon(pokemonCollection);
 }
 
 function renderPokemon(collection){
@@ -115,7 +112,6 @@ pokemonDialog.addEventListener('click', (outsideClick) => {
 });
 
 function refreshDialog(dialogIndex){
-    console.log(pokemonCollection[dialogIndex])
     renderDetailsPokemon(dialogIndex);
 }
 
@@ -124,24 +120,27 @@ function refreshDialog(dialogIndex){
 // next Button in Dialog
 // should 
 function nextPokemon(){
-    let collectionTotal = pokemonCollection.length;
+    const nxtBtnRef = document.getElementById("next-dialog-btn");
+    let lastIndex = pokemonCollection.length - 1;
     event.stopPropagation();
-    if(currentDialogIndex < collectionTotal){
+    if(currentDialogIndex < lastIndex){
         currentDialogIndex++;
-    } else{
-        currentDialogIndex = 0;
+    } else {
+        nxtBtnRef.classList.add("is-disabled");
+        return;
     }
     refreshDialog(currentDialogIndex);
 }
 
 // previous Button in Dialog
 function prevPokemon(){
-    let collectionTotal = pokemonCollection.length;
+    const prevBtnRef = document.getElementById("prev-dialog-btn");
     event.stopPropagation();
     if(currentDialogIndex > 0){
         currentDialogIndex--;
     } else {
-        currentDialogIndex = collectionTotal -1;
+        prevBtnRef.classList.add("is-disabled");
+        return;
     }
     refreshDialog(currentDialogIndex);
 }
@@ -191,14 +190,6 @@ function pokemonAbs(pokeData) {
     });
     return abs;
 }
-
-function pokemonHeight(pokeData){
-    return pokeData.height;
-}
-
-function pokemonWeight(pokeData){
-    return pokeData.weight;
-}
 // #endregion
 
 // #region - Search Pokemon
@@ -236,6 +227,26 @@ function checkPokemonName(pokeName, pokeSearch){
 function scrollToTop(){
     console.log("scroll to Top! muss ich noch feddich machen.")
 }
+
+// When the user scrolls down 20px from the top of the document, show the button
+window.onscroll = function() {onScrollFunction()};
+
+function onScrollFunction() {
+    const scrollTopBtn = document.getElementById("scroll-btn");
+
+    if (document.body.scrollTop > 20 || document.documentElement.scrollTop > 20) {
+        scrollTopBtn.style.display = "block";
+    } else {
+        scrollTopBtn.style.display = "none";
+    }
+}
+
+// When the user clicks on the button, scroll to the top of the document
+function scrollToTop() {
+  document.body.scrollTop = 0;
+  document.documentElement.scrollTop = 0;
+}
+
 
 // #region - Loading Spinner
 function showLoadingSpinner(){

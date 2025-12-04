@@ -4,7 +4,6 @@ function pokemonTemplate(pokeIndex){
     <section class="nes-container pokemon item-${pokeIndex}" onclick="openDetails(${pokeIndex})">
         <div class="pokemon-header">
             <span>#${pokemonCollection[pokeIndex].id}</span>
-            <span>colorIcon</span>
         </div>
         <div class="pokemon-main">
             <div class="poke-img">
@@ -18,8 +17,10 @@ function pokemonTemplate(pokeIndex){
                 <span>height: ${pokemonCollection[pokeIndex].height}ft</span>
             </div>
             <div class="poke-type">
-                <span>Type(s):${pokemonTypes(pokemonCollection[pokeIndex])}</span>
-                <span class="container"></span>
+                <span>Type(s):</span>
+                <span class="container">
+                    ${pokemonTypes(pokemonCollection[pokeIndex])}
+                </span>
             </div>
         </div>
     </section>
@@ -39,17 +40,11 @@ function abilitiesTemplate(absName, absSlot){
 }
 
 function pokemonDetailsTemplate(pokeIndex){
-    // const img = pokemonImage(details);
-    // const height = pokemonHeight(details);
-    // const weight = pokemonWeight(details);
-    // const types = pokemonTypes(details);
-    // const stats = pokemonStats(details);
-    // const abs = pokemonAbs(details);
     return `
         <div id="inner-dialog">
             <div class="pokemon-header">
                 <h3>${pokemonCollection[pokeIndex].name}</h3>
-                <button class="nes-btn is-error" id="close-dialog" onclick="closePokemonDetails()">X</button>
+                <button class="nes-btn is-error" id="close-dialog" onclick="closePokemonDetails()" alt="close dialog">X</button>
             </div>
             <div class="pokemon-main">
                 <div class="poke-img">
@@ -69,25 +64,27 @@ function pokemonDetailsTemplate(pokeIndex){
                         </div>
                         <div class="poke-type">
                             <span>Type(s):</span>
-                            <span class="container"></span>
+                            <span class="container">
+                                ${pokemonTypes(pokemonCollection[pokeIndex])}
+                            </span>
                         </div>
                     </div>
                     <div id="stats2" class="tab-pane" role="tabpanel">
                         <div class="nes-container is-rounded">
-                            
+                            ${pokemonStats(pokemonCollection[pokeIndex])}
                         </div>
                     </div>
                     <div id="stats3" class="tab-pane" role="tabpanel">
                         <div class="nes-container is-rounded">
-                            
+                            ${pokemonAbs(pokemonCollection[pokeIndex])}
                         </div>
                     </div>
                 </div>
             </div>
             <div class="pokemon-footer">
                 <menu class="dialog-menu">
-                    <button class="nes-btn is-primary" id="prev-dialog" onclick="prevPokemon()"><</button>
-                    <button class="nes-btn is-primary" id="next-dialog" onclick="nextPokemon()">></button>
+                    <button class="nes-btn is-primary" id="prev-dialog-btn" onclick="prevPokemon()"><</button>
+                    <button class="nes-btn is-primary" id="next-dialog-btn" onclick="nextPokemon()">></button>
                 </menu>
             </div>
         </div>
