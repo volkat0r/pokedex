@@ -1,16 +1,11 @@
 function init(){
-    fetchEmAll();
+    fetchPokemon();
 }
-
-/**
- * Represents a book.
- * @constructor
- * @param {string} title - The title of the book.
- * @param {string} author - The author of the book.
- */
 
 // #region - Global Variables
 let pokemonCollection = [];
+let pokemonResultCollection = [];
+let currentRenderCollection = pokemonCollection;
 let currentDialogIndex = 0;
 let url = `https://pokeapi.co/api/v2/pokemon`;
 const resultRef = document.getElementById("resultArea");
@@ -21,7 +16,7 @@ const loadingSpinnerRef = document.querySelector("div.loader");
 
 // #region - Promise Functions
 
-async function fetchEmAll(){
+async function fetchPokemon(){
     showLoadingSpinner();
     try {    
         const response = await fetch(url);
@@ -46,14 +41,16 @@ async function fetchDetails(collection){
 function renderPokemon(collection){
     resultRef.innerHTML = "";
     showLoadingSpinner();
+    currentRenderCollection = collection;
     for(pokeIndex = 0; pokeIndex < collection.length; pokeIndex++){
-        resultRef.innerHTML += pokemonTemplate(pokeIndex);
+        resultRef.innerHTML += pokemonTemplate(collection, pokeIndex);
     }
     hideLoadingSpinner();
 }
 
 function renderDetailsPokemon(pokeIndex){
-    pokemonDialog.innerHTML = pokemonDetailsTemplate(pokeIndex);
+    const pokemon = currentRenderCollection[pokeIndex];
+    pokemonDialog.innerHTML = pokemonDetailsTemplate(pokemon);
     pokemonDialog.showModal();
 }
 
@@ -88,7 +85,7 @@ function refreshDialog(dialogIndex){
     renderDetailsPokemon(dialogIndex);
 }
 
-function openTab(event, activeTab){
+function openDetailTab(event, activeTab){
     const tabPane = document.getElementsByClassName("tab-pane");
     const tabBtn = document.getElementsByClassName("tab-btn");
     for (let i = 0; i < tabPane.length; i++) {
@@ -129,10 +126,9 @@ function prevPokemon(){
 // #region Load-More Functions
 function loadMore(){
     if (!url) return;
-    fetchEmAll();
+    fetchPokemon();
 }
 // #endregion
-
 
 // #region - Pokemon Data Functions
 function pokemonTypes(pokeData){
@@ -166,31 +162,29 @@ function pokemonAbs(pokeData) {
 // #endregion
 
 // #region - Search Pokemon
-function initSearch(){
-    const searchInput = document.getElementById("search-input").value;
-    if (searchInput.length < 3){
-        console.log("du brauchst mindestens 3 Buchstaben");
+function initSearch() {
+    const searchInput = document.getElementById("search-input").value.trim();
+    if (searchInput.length < 3) {
+        pokemonResultCollection = [];
         renderPokemon(pokemonCollection);
         return;
-    } 
-    searchPokemon(searchInput);
-    if (pokemonCollection.length == 0){
+    }
+    pokemonResultCollection = searchPokemon(searchInput);
+    if (pokemonResultCollection.length === 0) {
         resultRef.innerHTML = noSearchResult();
         return;
     }
-    renderPokemon(pokemonCollection);
+    renderPokemon(pokemonResultCollection);
 }
 
-function searchPokemon(searchInput){
-    let actualPokemon = pokemonCollection;
-    pokemonCollection = [];
-    actualPokemon.forEach(
-        function (p) {
-            if (checkPokemonName(p.name, searchInput)){
-                pokemonCollection.push(p);
-            }
+function searchPokemon(searchInput) {
+    let filtered = [];
+    pokemonCollection.forEach(p => {
+        if (checkPokemonName(p.name, searchInput)) {
+            filtered.push(p);
         }
-    )
+    });
+    return filtered;
 }
 
 function checkPokemonName(pokeName, pokeSearch){
