@@ -39,6 +39,14 @@ function abilitiesTemplate(absName, absSlot){
     return `<p>Slot ${absSlot}: <b>${absName}</b></p>`;
 }
 
+function noSearchResult(){
+    return `
+    <div class="emptyResult">
+        <span class="ash"></span>
+        <p class="nes-balloon from-left nes-pointer">No Pokemon to catch!</p>
+    </div>`;
+}
+
 function pokemonDetailsTemplate(pokeIndex){
     return `
         <div id="inner-dialog">

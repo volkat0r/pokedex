@@ -6,8 +6,8 @@
     <title>Pokedex</title>
     <link rel="icon" type="image/x-icon" href="./assets/icons/favicon.png">
     <link rel="stylesheet" href="./styles/standard.css">
-    <link rel="stylesheet" href="./styles/font-face.css"> 
-    <link href="https://unpkg.com/nes.css/css/nes-core.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="./styles/font-face.css">
+    <link href="./styles/nes-core.min.css" rel="stylesheet" />
     <link rel="stylesheet" href="./style.css">
     <script src="./scripts/template.js"></script>
 </head>
@@ -19,29 +19,26 @@
         </div>
     </header>
     <main>
-
         <div class="container">
             <section id="searchArea">
-                <input type="text" id="search-input" placeholder="search for pokemon" class="nes-input">
-                <button type="button" class="nes-btn is-primary" onclick="initSearch()">Search</button>
+                <form>
+                    <input type="text" id="search-input" placeholder="search for pokemon" class="nes-input" oninput="initSearch()">
+                </form>
             </section>
-
             <section id="resultArea"></section>
-
             <section id="interactionArea">
                 <button type="button" id="load-more" class="nes-btn is-primary" onclick="loadMore()">load more!</button>
             </section>
         </div>
     </main>
     <footer>
-        <div class="container">
-
-        </div>
+        <div class="container"></div>
     </footer>
+    <!-- DOM-Elements which have no relative position -->
     <div class="background-effect"></div>
     <div class="refresh"></div>
     <dialog class="nes-dialog" id="dialog-pokemon"></dialog>
-    <button type="button" class="nes-btn is-error active" href="#top" onclick="scrollToTop()" id="scroll-btn"><span>&lt;</span></button>
+    <button type="button" class="nes-btn is-error active" onclick="scrollToTop()" id="scroll-btn"><span>&lt;</span></button>
 </body>
 <script src="./script.js"></script>
 </html>
